@@ -5,9 +5,11 @@ import { AnomalyDetail } from "./AnomalyDetail";
 import { anomalies } from "@/lib/mock-data";
 import { AlertCircle, TrendingUp, ShieldAlert, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuditData } from "@/hooks/useAuditData";
 
 export function AnomaliesPage() {
   const [selected, setSelected] = useState(anomalies[0]);
+  const { stats } = useAuditData();
 
   return (
     <PageLayout 
@@ -16,10 +18,10 @@ export function AnomaliesPage() {
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Critical Anomalies", value: "3", icon: ShieldAlert, color: "text-red-500", bg: "bg-red-500/10" },
-          { label: "High Risk", value: "12", icon: AlertCircle, color: "text-orange-500", bg: "bg-orange-500/10" },
-          { label: "Unusual Patterns", value: "84", icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
-          { label: "Resolved Today", value: "45", icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" }
+          { label: "Critical Anomalies", value: String(stats.high_risk_count), icon: ShieldAlert, color: "text-red-500", bg: "bg-red-500/10" },
+          { label: "High Risk", value: String(stats.high_risk_count), icon: AlertCircle, color: "text-orange-500", bg: "bg-orange-500/10" },
+          { label: "Unusual Patterns", value: String(stats.medium_risk_count + stats.low_risk_count), icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
+          { label: "Resolved Today", value: String(Math.max(0, stats.total_transactions_reviewed - stats.total_flagged)), icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" }
         ].map((stat, i) => (
           <div key={i} className="glass-card p-5 rounded-xl border border-border/50 flex items-center gap-4">
             <div className={cn("p-3 rounded-xl", stat.bg, stat.color)}>

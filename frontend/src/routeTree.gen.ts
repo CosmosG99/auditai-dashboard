@@ -13,6 +13,7 @@ import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as InsightsRouteImport } from './routes/insights'
+import { Route as DetectionResultRouteImport } from './routes/detection-result'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AnomaliesRouteImport } from './routes/anomalies'
 import { Route as IndexRouteImport } from './routes/index'
@@ -37,6 +38,11 @@ const InsightsRoute = InsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DetectionResultRoute = DetectionResultRouteImport.update({
+  id: '/detection-result',
+  path: '/detection-result',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anomalies': typeof AnomaliesRoute
   '/dashboard': typeof DashboardRoute
+  '/detection-result': typeof DetectionResultRoute
   '/insights': typeof InsightsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anomalies': typeof AnomaliesRoute
   '/dashboard': typeof DashboardRoute
+  '/detection-result': typeof DetectionResultRoute
   '/insights': typeof InsightsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/anomalies': typeof AnomaliesRoute
   '/dashboard': typeof DashboardRoute
+  '/detection-result': typeof DetectionResultRoute
   '/insights': typeof InsightsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anomalies'
     | '/dashboard'
+    | '/detection-result'
     | '/insights'
     | '/reports'
     | '/settings'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anomalies'
     | '/dashboard'
+    | '/detection-result'
     | '/insights'
     | '/reports'
     | '/settings'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anomalies'
     | '/dashboard'
+    | '/detection-result'
     | '/insights'
     | '/reports'
     | '/settings'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnomaliesRoute: typeof AnomaliesRoute
   DashboardRoute: typeof DashboardRoute
+  DetectionResultRoute: typeof DetectionResultRoute
   InsightsRoute: typeof InsightsRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/detection-result': {
+      id: '/detection-result'
+      path: '/detection-result'
+      fullPath: '/detection-result'
+      preLoaderRoute: typeof DetectionResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnomaliesRoute: AnomaliesRoute,
   DashboardRoute: DashboardRoute,
+  DetectionResultRoute: DetectionResultRoute,
   InsightsRoute: InsightsRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,

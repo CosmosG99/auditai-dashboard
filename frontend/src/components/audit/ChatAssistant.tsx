@@ -4,6 +4,7 @@ import { MessageSquare, X, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useThemeLang } from "./ThemeLangContext";
+import { runChat } from "@/lib/audit-api";
 
 type Msg = { role: "user" | "ai"; text: string };
 
@@ -16,22 +17,22 @@ export function ChatAssistant() {
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>(seed);
   const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const send = () => {
+  const send = async () => {
     if (!input.trim()) return;
     const q = input.trim();
     setMsgs((m) => [...m, { role: "user", text: q }]);
     setInput("");
-    setTimeout(() => {
-      setMsgs((m) => [
-        ...m,
-        {
-          role: "ai",
-          text:
-            "Based on 90 days of history, this transaction is 4.2σ above the vendor's normal range and matches 2 prior duplicate-payment patterns. Recommended: escalate to finance lead.",
-        },
-      ]);
-    }, 600);
+    setSending(true);
+    try {
+      const reply = await runChat(q);
+      setMsgs((m) => [...m, { role: "ai", text: reply || "I could not generate a response right now." }]);
+    } catch {
+      setMsgs((m) => [...m, { role: "ai", text: "AuditAI is unavailable right now. Please try again." }]);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -93,7 +94,7 @@ export function ChatAssistant() {
                 placeholder={t.askAi}
                 className="bg-secondary/50"
               />
-              <Button size="icon" onClick={send}>
+              <Button size="icon" onClick={send} disabled={sending}>
                 <Send className="h-4 w-4" />
               </Button>
             </div>

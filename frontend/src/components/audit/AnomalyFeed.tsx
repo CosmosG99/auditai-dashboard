@@ -16,16 +16,18 @@ const riskColor: Record<RiskLevel, string> = {
 const riskWeight: Record<RiskLevel, number> = { Low: 1, Medium: 2, High: 3 };
 
 export function AnomalyFeed({
+  anomalies,
   selectedId,
   onSelect,
 }: {
+  anomalies: Anomaly[];
   selectedId: string;
   onSelect: (a: Anomaly) => void;
 }) {
   const { t } = useThemeLang();
   const [minRisk, setMinRisk] = useState<number>(1);
 
-  const filtered = anomalies.filter((a) => riskWeight[a.risk] >= minRisk);
+  const filtered = (anomalies || []).filter((a) => a && riskWeight[a.risk] >= minRisk);
 
   return (
     <div className="glass-card rounded-2xl p-5 flex flex-col h-full">

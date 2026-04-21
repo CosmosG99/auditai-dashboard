@@ -1,39 +1,43 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, ArrowDownRight, AlertTriangle, Activity, Wallet, Gauge } from "lucide-react";
 import { useThemeLang } from "./ThemeLangContext";
+import { useAuditData } from "@/hooks/useAuditData";
 
 export function StatCards() {
   const { t } = useThemeLang();
+  const { stats } = useAuditData();
+  const riskScore =
+    stats.high_risk_count * 3 + stats.medium_risk_count * 2 + stats.low_risk_count;
   const cards = [
     {
       label: t.totalTx,
-      value: "12,438",
-      delta: "+8.2%",
+      value: stats.total_transactions_reviewed.toLocaleString(),
+      delta: `${stats.total_events.toLocaleString()} events`,
       up: true,
       icon: Activity,
       accent: "text-foreground",
     },
     {
       label: t.anomDetected,
-      value: "47",
-      delta: "+12",
+      value: stats.total_flagged.toLocaleString(),
+      delta: `${stats.high_risk_count} high risk`,
       up: true,
       icon: AlertTriangle,
       accent: "text-primary",
     },
     {
       label: t.riskScore,
-      value: "Medium",
-      delta: "62 / 100",
-      up: false,
+      value: stats.high_risk_count > 0 ? "High" : stats.medium_risk_count > 0 ? "Medium" : "Low",
+      delta: `${riskScore} weighted`,
+      up: stats.high_risk_count === 0,
       icon: Gauge,
       accent: "text-warning",
     },
     {
       label: t.finVolume,
-      value: "₹ 18.2M",
-      delta: "-2.1%",
-      up: false,
+      value: `₹ ${stats.total_volume.toLocaleString()}`,
+      delta: `${stats.low_risk_count} low risk`,
+      up: true,
       icon: Wallet,
       accent: "text-foreground",
     },
