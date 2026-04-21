@@ -1,3 +1,4 @@
+import { Link, useMatchRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -11,9 +12,10 @@ import {
 import { useThemeLang } from "./ThemeLangContext";
 import { cn } from "@/lib/utils";
 
-type Item = { key: "dashboard" | "transactions" | "anomalies" | "reports" | "insights" | "settings"; icon: typeof LayoutDashboard; active?: boolean };
+type ItemKey = "dashboard" | "transactions" | "anomalies" | "reports" | "insights" | "settings";
+type Item = { key: ItemKey; icon: typeof LayoutDashboard };
 const items: Item[] = [
-  { key: "dashboard", icon: LayoutDashboard, active: true },
+  { key: "dashboard", icon: LayoutDashboard },
   { key: "transactions", icon: ArrowLeftRight },
   { key: "anomalies", icon: AlertTriangle },
   { key: "reports", icon: FileText },
@@ -23,6 +25,8 @@ const items: Item[] = [
 
 export function Sidebar() {
   const { t } = useThemeLang();
+  const matchRoute = useMatchRoute();
+
   return (
     <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
       <div className="flex items-center gap-2 px-5 h-16 border-b border-sidebar-border">
@@ -34,26 +38,30 @@ export function Sidebar() {
         </div>
       </div>
       <nav className="flex-1 p-3 space-y-1">
-        {items.map((it) => (
-          <button
-            key={it.key}
-            className={cn(
-              "group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
-              it.active
-                ? "bg-primary/10 text-primary border border-primary/20"
-                : "text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-secondary/60",
-            )}
-          >
-            <it.icon className="h-4 w-4" />
-            <span className="capitalize">{t[it.key as keyof typeof t]}</span>
-            {it.active && (
-              <motion.span
-                layoutId="active-dot"
-                className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"
-              />
-            )}
-          </button>
-        ))}
+        {items.map((it) => {
+          const isActive = matchRoute({ to: `/${it.key}` });
+          return (
+            <Link
+              key={it.key}
+              to={`/${it.key}`}
+              className={cn(
+                "group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all outline-none",
+                isActive
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-secondary/60 border border-transparent",
+              )}
+            >
+              <it.icon className="h-4 w-4" />
+              <span className="capitalize">{t[it.key as keyof typeof t]}</span>
+              {isActive && (
+                <motion.span
+                  layoutId="active-dot"
+                  className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"
+                />
+              )}
+            </Link>
+          );
+        })}
       </nav>
       <div className="m-3 p-4 rounded-xl glass-card">
         <div className="text-xs text-muted-foreground mb-1">Compliance</div>
