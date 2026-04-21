@@ -9,7 +9,7 @@ class AppConfig {
   static String userOrg = '';
   static String userRole = '';
 
-  static const String apiBaseUrl = 'http://127.0.0.1:5000/api';
+  static const String apiBaseUrl = 'http://192.168.1.112:5000/api';
 
   static String get userInitials {
     if (userName.isEmpty) return 'U';

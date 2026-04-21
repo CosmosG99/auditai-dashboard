@@ -6,34 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import '../theme.dart';
 import '../globals.dart';
 import '../main_navigation.dart';
+import '../services/audit_service.dart';
 import 'report_detail_screen.dart';
-
-class Report {
-  final String title;
-  final String date;
-  final String status;
-  final String summary;
-  final List<Map<String, String>> transactions;
-  bool isDownloading = false;
-
-  Report(this.title, this.date, this.status, {this.summary = '', this.transactions = const []});
-}
-
-class GlobalReports {
-  static List<Report> list = [
-    Report('Q3 Financial Review', 'Oct 15, 2026', 'Completed',
-      summary: 'Analyzed 847 transactions across 12 vendors. Found 3 duplicate invoices and 1 suspicious payment pattern from Acme Corp totaling \$45,200.',
-      transactions: [
-        {'vendor': 'Acme Corp', 'amount': '\$45,200', 'type': 'FRAUD', 'detail': 'Amount 300% above historical average'},
-        {'vendor': 'Supplies Inc', 'amount': '\$1,500', 'type': 'LEGIT', 'detail': 'Standard monthly order'},
-      ]),
-    Report('Vendor Risk Assessment', 'Nov 02, 2026', 'In Progress',
-      summary: 'Cross-referencing 24 active vendors against compliance databases.',
-      transactions: [
-        {'vendor': 'Global Trades', 'amount': '\$89,000', 'type': 'FRAUD', 'detail': 'Shell company pattern detected'},
-      ]),
-  ];
-}
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -42,88 +16,60 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-  final _titleController = TextEditingController();
-  final _summaryController = TextEditingController();
-  String _selectedStatus = 'Completed';
+  List<TransactionAnalysisResult> _history = [];
+  bool _isLoading = true;
 
-  void _showAddReportDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: AuditTheme.surfaceGlass,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Text('CREATE AUDIT LOG', style: TextStyle(color: AuditTheme.cyberTeal, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildField(_titleController, 'Report Name', Icons.edit_document),
-              const SizedBox(height: 16),
-              _buildField(_summaryController, 'Overview', Icons.info_outline_rounded, lines: 3),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedStatus,
-                dropdownColor: AuditTheme.surfaceGlass,
-                style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('Priority Level'),
-                items: ['Completed', 'In Progress', 'Flagged'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                onChanged: (val) { if (val != null) setDialogState(() => _selectedStatus = val); },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('DISCARD', style: TextStyle(color: AuditTheme.textSlate))),
-            ElevatedButton(
-              onPressed: () {
-                if (_titleController.text.isNotEmpty) {
-                  setState(() => GlobalReports.list.insert(0, Report(_titleController.text, 'Today', _selectedStatus, summary: _summaryController.text, transactions: [{'vendor': 'Manual Entry', 'amount': '\$0', 'type': 'LEGIT', 'detail': 'Entry Created'}])));
-                  _titleController.clear(); _summaryController.clear();
-                  Navigator.pop(context);
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: AuditTheme.cyberTeal),
-              child: const Text('INITIALIZE', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _fetchHistory();
   }
 
-  Widget _buildField(TextEditingController ctrl, String lab, IconData icon, {int lines = 1}) {
-    return TextField(
-      controller: ctrl, maxLines: lines,
-      style: const TextStyle(color: Colors.white),
-      decoration: _inputDecoration(lab).copyWith(prefixIcon: Icon(icon, color: AuditTheme.cyberTeal, size: 20)),
-    );
+  Future<void> _fetchHistory() async {
+    try {
+      final history = await AuditService.getAuditHistory();
+      setState(() {
+        _history = history;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label, labelStyle: const TextStyle(color: AuditTheme.textSlate, fontSize: 13),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: AuditTheme.textSlate.withOpacity(0.2))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AuditTheme.cyberTeal)),
-    );
-  }
-
-  void _downloadPdf(Report report) async {
-    setState(() => report.isDownloading = true);
+  void _downloadPdf(TransactionAnalysisResult result) async {
     try {
       final pdf = pw.Document();
       pdf.addPage(pw.MultiPage(build: (pw.Context context) => [
-        pw.Header(level: 0, text: 'AUDITAI SECURE REPORT'),
-        pw.Paragraph(text: 'ID: ${report.title} | ${report.date}'),
-        pw.Paragraph(text: 'SUMMARY: ${report.summary}')
+        pw.Header(level: 0, text: 'AUDITAI FORENSIC REPORT'),
+        pw.Divider(),
+        pw.Paragraph(text: 'Date: ${result.createdAt?.toString() ?? 'N/A'}'),
+        pw.Paragraph(text: 'Vendor: ${result.extractedData['vendor_name']}'),
+        pw.Paragraph(text: 'Amount: INR ${result.extractedData['amount_inr']}'),
+        pw.Paragraph(text: 'Category: ${result.extractedData['category']}'),
+        pw.Divider(),
+        pw.Header(level: 1, text: 'Forensic Verdict'),
+        pw.Paragraph(text: 'Status: ${result.riskLevel}'),
+        pw.Paragraph(text: 'Anomaly Score: ${result.anomalyScore}%'),
+        pw.Paragraph(text: 'Reasoning: ${result.reason}'),
+        if (result.suspiciousSignals.isNotEmpty) ...[
+          pw.Header(level: 2, text: 'Risk Flags'),
+          ...result.suspiciousSignals.map((s) => pw.Bullet(text: s)),
+        ],
       ]));
       final output = await getApplicationDocumentsDirectory();
-      final file = File("${output.path}/${report.title.replaceAll(' ', '_')}.pdf");
+      final filename = "Audit_${result.extractedData['vendor_name']}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      final file = File("${output.path}/$filename");
       await file.writeAsBytes(await pdf.save());
       if (mounted) {
-        setState(() => report.isDownloading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Saved: ${file.path}'), backgroundColor: AuditTheme.cyberTeal));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Report Saved: $filename'), 
+          backgroundColor: AuditTheme.cyberTeal,
+          action: SnackBarAction(label: 'OK', textColor: Colors.white, onPressed: () {}),
+        ));
       }
     } catch (e) {
-      if (mounted) setState(() => report.isDownloading = false);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to generate PDF: $e'), backgroundColor: Colors.red));
     }
   }
 
@@ -145,45 +91,77 @@ class _ReportsScreenState extends State<ReportsScreen> {
           body: Container(
             decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: isDark ? [const Color(0xFF0F172A), const Color(0xFF0A0F1D)] : [Colors.white, const Color(0xFFF1F5F9)])),
             child: SafeArea(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(20),
-                itemCount: GlobalReports.list.length,
-                itemBuilder: (context, index) {
-                  final report = GlobalReports.list[index];
-                  Color color = AuditTheme.textSlate;
-                  if (report.status == 'Completed') color = AuditTheme.cyberTeal;
-                  if (report.status == 'In Progress') color = AuditTheme.alertOrange;
-                  if (report.status == 'Flagged') color = AuditTheme.neonMagenta;
+              child: _isLoading 
+                ? const Center(child: CircularProgressIndicator(color: AuditTheme.cyberTeal))
+                : RefreshIndicator(
+                    onRefresh: _fetchHistory,
+                    color: AuditTheme.cyberTeal,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(20),
+                      itemCount: _history.length,
+                      itemBuilder: (context, index) {
+                        final result = _history[index];
+                        Color color = AuditTheme.cyberTeal;
+                        if (result.status == 'proper') color = AuditTheme.cyberTeal;
+                        if (result.status == 'fake') color = AuditTheme.neonMagenta;
+                        if (result.status == 'potential_false_positive') color = AuditTheme.alertOrange;
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 20),
-                    decoration: AuditTheme.glassDecoration(isDark: isDark, accentColor: color),
-                    child: ListTile(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ReportDetailScreen(report: report))),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      leading: Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(16)), child: Icon(Icons.analytics_outlined, color: color)),
-                      title: Text(report.title, style: TextStyle(fontWeight: FontWeight.w800, color: textColor)),
-                      subtitle: Text(report.date, style: const TextStyle(color: AuditTheme.textSlate, fontSize: 12)),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Text(report.status, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 10))),
-                          const SizedBox(width: 8),
-                          IconButton(icon: Icon(Icons.picture_as_pdf_rounded, color: AuditTheme.neonMagenta.withOpacity(0.7)), onPressed: () => _downloadPdf(report)),
-                        ],
-                      ),
+                        return InkWell(
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ReportDetailScreen(result: result))),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.all(20),
+                            decoration: AuditTheme.glassDecoration(isDark: isDark, accentColor: color),
+                            child: Row(
+                              children: [
+                                // Left Icon
+                                Container(
+                                  padding: const EdgeInsets.all(12), 
+                                  decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(16)), 
+                                  child: Icon(Icons.analytics_outlined, color: color)
+                                ),
+                                const SizedBox(width: 16),
+                                
+                                // Center Info (Expanded so it doesn't squeeze text)
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        result.extractedData['vendor_name']?.toString() ?? 'Unknown', 
+                                        style: TextStyle(fontWeight: FontWeight.w800, color: textColor, fontSize: 16),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        result.createdAt != null ? result.createdAt!.toString().split(' ')[0] : 'Unknown Date', 
+                                        style: const TextStyle(color: AuditTheme.textSlate, fontSize: 12),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), 
+                                        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), 
+                                        child: Text(
+                                          result.status?.toUpperCase() ?? 'UNK', 
+                                          style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 9, letterSpacing: 0.5)
+                                        )
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                
+                                // Right Action
+                                IconButton(
+                                  icon: Icon(Icons.picture_as_pdf_rounded, color: AuditTheme.neonMagenta.withOpacity(0.7)), 
+                                  onPressed: () => _downloadPdf(result)
+                                ),
+                              ],
+                            ),
+                          ),
+                        ).animate().fade(delay: (100 * index).ms).slideX(begin: 0.1);
+                      },
                     ),
-                  ).animate().fade(delay: (100 * index).ms).slideX(begin: 0.1);
-                },
-              ),
-            ),
-          ),
-          floatingActionButton: Padding(
-            padding: const EdgeInsets.only(bottom: 90),
-            child: FloatingActionButton(
-              onPressed: _showAddReportDialog,
-              backgroundColor: AuditTheme.cyberTeal,
-              child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+                  ),
             ),
           ),
         );

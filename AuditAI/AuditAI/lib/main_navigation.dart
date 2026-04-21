@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/ask_auditai_screen.dart';
 import 'screens/reports_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/transaction_analyzer_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -18,7 +19,7 @@ class MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _screens = [
     const DashboardScreen(),
-    const HomeScreen(),
+    const TransactionAnalyzerScreen(),
     const AskAuditAiScreen(),
     const ReportsScreen(),
     const ProfileScreen(),
@@ -43,7 +44,7 @@ class MainNavigationState extends State<MainNavigation> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildNavItem(0, Icons.grid_view_rounded, 'Dashboard'),
-            _buildNavItem(1, Icons.sensors_rounded, 'Feed'),
+            _buildNavItem(1, Icons.receipt_rounded, 'Analyze'),
             _buildNavItem(2, Icons.auto_awesome_rounded, 'Ask AI'),
             _buildNavItem(3, Icons.insert_chart_outlined_rounded, 'Reports'),
             _buildNavItem(4, Icons.person_rounded, 'Profile'),

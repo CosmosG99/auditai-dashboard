@@ -1,0 +1,189 @@
+🚀 OLLAMA INTEGRATION SETUP GUIDE
+=================================
+
+Your AuditAI mobile app is now fully integrated with Ollama for local fraud analysis.
+
+SETUP REQUIREMENTS
+==================
+
+1. OLLAMA SETUP
+   - Install Ollama from https://ollama.ai
+   - Pull Gemma4: ollama pull gemma4
+   - Run Ollama: ollama run gemma4
+   - Verify it's running on: http://localhost:11434
+
+2. BACKEND API SETUP
+   - Location: c:\Geetesh\Hackathons\Audit\auditai-dashboard\AuditAI\backend
+   - Run: npm run dev
+   - Listens on: http://0.0.0.0:5000
+   - Provides:
+     * /api/analyze-transaction (POST) - Analyzes transactions for fraud
+     * /api/ask-auditai (POST) - Chat with fraud detection AI
+
+3. NETWORK CONFIGURATION
+   - Your PC IP: 192.168.1.112
+   - Mobile device must be on the same network
+   - Update if IP changes:
+     * Edit: lib/config/api_keys.dart
+     * Change: static const String backendUrl = 'http://192.168.1.112:5000';
+
+FLUTTER APP CHANGES
+===================
+
+NEW FILES CREATED:
+- lib/services/audit_service.dart
+  * TransactionAnalysisResult class
+  * AuditService with analyzeTransaction() and askAuditAi() methods
+
+- lib/screens/transaction_analyzer_screen.dart
+  * New Transaction Analyzer screen integrated in main navigation
+  * Replace "Analyze" tab (was "Feed")
+  * Accepts: Vendor, Amount, Category, Payment Method
+  * Returns: Risk level, Anomaly score, Suspicious signals
+
+UPDATED FILES:
+- lib/config/api_keys.dart
+  * Now points to backend URL instead of local Ollama
+  * Updated with backend endpoints
+
+- lib/screens/ask_auditai_screen.dart
+  * Now uses AuditService instead of direct Ollama calls
+  * All requests go through backend API
+
+- lib/main_navigation.dart
+  * Added transaction_analyzer_screen import
+  * Replaced HomeScreen with TransactionAnalyzerScreen in navigation
+
+FLOW DIAGRAM
+============
+
+Mobile App
+    ↓
+AuditService (lib/services/audit_service.dart)
+    ↓
+Backend API (192.168.1.112:5000)
+    ↓
+Ollama (localhost:11434)
+    ↓
+Gemma4 Model
+
+USAGE
+=====
+
+1. Open Flutter app on mobile device
+2. Navigate to "Analyze" tab
+3. Enter transaction details:
+   - Vendor name
+   - Amount (₹)
+   - Category
+   - Payment method
+4. Tap "Analyze Transaction"
+5. View risk assessment with:
+   - Risk level (LOW/MEDIUM/HIGH)
+   - Anomaly score (0-100%)
+   - Suspicious signals
+   - Recommended action
+
+CHAT FEATURE
+============
+
+1. Navigate to "Ask AI" tab
+2. Ask fraud/audit-related questions
+3. Examples:
+   - "What are common fraud patterns?"
+   - "How to detect duplicate payments?"
+   - "Explain transaction anomalies"
+
+API ENDPOINTS
+=============
+
+POST /api/analyze-transaction
+Request:
+{
+  "vendor": "Amazon",
+  "amount": 5000,
+  "category": "Supplies",
+  "timestamp": "2026-04-22T10:30:00Z",
+  "payment_method": "Bank Transfer",
+  "times_paid_before": 10,
+  "average_amount": 2000,
+  "always_approved": false
+}
+
+Response:
+{
+  "audit_event": {
+    "id": "audit-...",
+    "created_at": "...",
+    "detection": {
+      "risk_level": "LOW|MEDIUM|HIGH",
+      "anomaly_score": 0-100,
+      "is_anomaly": true|false,
+      "reason": "Assessment reason",
+      "suspicious_signals": ["signal1", "signal2"],
+      "verdict": "LIKELY_SAFE|NEEDS_REVIEW|LIKELY_FRAUD",
+      "recommended_action": "Action to take"
+    }
+  }
+}
+
+POST /api/ask-auditai
+Request:
+{
+  "message": "What are common fraud patterns?",
+  "context": "Previous conversation (optional)"
+}
+
+Response:
+{
+  "response": "Gemma4 AI response about fraud patterns..."
+}
+
+TROUBLESHOOTING
+===============
+
+1. "Connection refused" error?
+   - Verify Ollama is running: ollama run gemma4
+   - Check backend is running: npm run dev in /AuditAI/backend
+   - Confirm IP address in api_keys.dart
+
+2. "Timeout" error?
+   - Ollama might be slow first time
+   - Try again (analysis takes 10-30 seconds)
+   - Check network connectivity
+
+3. Mobile app can't reach backend?
+   - Ensure mobile device is on same WiFi as PC
+   - Verify PC IP: ipconfig (look for IPv4 Address)
+   - Update api_keys.dart with correct IP
+   - Check firewall allows port 5000
+
+4. Backend error "Ollama request timeout"?
+   - Restart Ollama: ollama run gemma4
+   - Check model is downloaded: ollama list
+
+DASHBOARD INTEGRATION
+====================
+
+Same analysis logic is used throughout the app:
+- Dashboard: Shows analysis summaries
+- Reports: Displays detailed findings
+- Transactions: Flags anomalies
+- Chat: Uses Ollama for Q&A
+
+All connected through the backend API for consistent analysis.
+
+NEXT STEPS
+==========
+
+1. Run the Flutter app
+2. Test transaction analysis
+3. Verify API responses
+4. Chat with the AI
+5. Monitor backend logs
+6. Adjust Ollama model if needed
+
+Questions? Check the logs:
+- Backend: Check npm run dev output
+- Mobile: Flutter console output
+- Ollama: Terminal where you ran ollama run gemma4

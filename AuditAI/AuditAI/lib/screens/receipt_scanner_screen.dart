@@ -27,8 +27,6 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
     
     setState(() => _isUploading = false);
     
-    GlobalReports.list.insert(0, Report('Analyzed Receipt', 'Just Now', 'Completed'));
-    
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

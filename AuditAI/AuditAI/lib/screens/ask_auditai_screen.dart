@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import '../theme.dart';
 import '../globals.dart';
-import '../config/api_keys.dart';
+import '../services/audit_service.dart';
 
 class AskAuditAiScreen extends StatefulWidget {
   const AskAuditAiScreen({super.key});
@@ -15,22 +14,12 @@ class _AskAuditAiScreenState extends State<AskAuditAiScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<_Message> _messages = [];
   bool _isLoading = false;
-  late GenerativeModel _model;
-  late ChatSession _chat;
   final ScrollController _scrollController = ScrollController();
+  String _conversationContext = '';
 
   @override
   void initState() {
     super.initState();
-    _model = GenerativeModel(
-      model: 'gemini-2.0-flash',
-      apiKey: ApiKeys.googleGenerativeAiKey,
-      systemInstruction: Content.text(
-        'You are AuditAI, a specialized financial auditing AI assistant. '
-        'ONLY help with finance/auditing/fraud. If off-topic, politely decline.'
-      ),
-    );
-    _chat = _model.startChat();
     _messages.add(_Message("Secure link established. AuditAI is standing by.", false));
   }
 
@@ -40,11 +29,23 @@ class _AskAuditAiScreenState extends State<AskAuditAiScreen> {
     _controller.clear();
     if (mounted) setState(() { _messages.add(_Message(text, true)); _isLoading = true; });
     _scrollToBottom();
+    
     try {
-      final response = await _chat.sendMessage(Content.text(text));
-      if (mounted) setState(() { _messages.add(_Message(response.text ?? 'Pattern analysis failed.', false)); _isLoading = false; });
+      final response = await AuditService.askAuditAi(
+        message: text,
+        context: _conversationContext,
+      );
+      
+      if (mounted) setState(() { 
+        _messages.add(_Message(response, false)); 
+        _conversationContext += 'User: $text\nAssistant: $response\n';
+        _isLoading = false; 
+      });
     } catch (e) {
-      if (mounted) setState(() { _messages.add(_Message("Secure link error: $e", false)); _isLoading = false; });
+      if (mounted) setState(() { 
+        _messages.add(_Message("Error: ${e.toString()}\n\nMake sure backend is running at 192.168.1.112:5000 and Ollama is running locally", false)); 
+        _isLoading = false; 
+      });
     }
     _scrollToBottom();
   }
