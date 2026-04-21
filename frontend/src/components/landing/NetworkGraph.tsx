@@ -94,7 +94,11 @@ export function NetworkGraph() {
       )
     );
 
-    return { nodes: n, conns: c, lineGeo: geo };
+    return {
+      nodes: n,
+      conns: c,
+      lineGeo: geo,
+    };
   }, []);
 
   useFrame(({ clock }) => {
@@ -106,16 +110,21 @@ export function NetworkGraph() {
 
       const x =
         nd.base[0] +
-        Math.sin(t * nd.speed + nd.phaseX) * nd.amp;
+        Math.sin(t * nd.speed + nd.phaseX) *
+        nd.amp;
 
       const y =
         nd.base[1] +
-        Math.cos(t * nd.speed * 0.85 + nd.phaseY) *
+        Math.cos(
+          t * nd.speed * 0.85 + nd.phaseY
+        ) *
         nd.amp;
 
       const z =
         nd.base[2] +
-        Math.sin(t * nd.speed * 0.6 + nd.phaseZ) *
+        Math.sin(
+          t * nd.speed * 0.6 + nd.phaseZ
+        ) *
         nd.amp *
         0.5;
 
@@ -123,10 +132,18 @@ export function NetworkGraph() {
       cp[i * 3 + 1] = y;
       cp[i * 3 + 2] = z;
 
-      nodeRefs.current[i]?.position.set(x, y, z);
-      glowRefs.current[i]?.position.set(x, y, z);
+      nodeRefs.current[i]?.position.set(
+        x,
+        y,
+        z
+      );
 
-      /* ONLY center dots blink */
+      glowRefs.current[i]?.position.set(
+        x,
+        y,
+        z
+      );
+
       const pulse =
         0.55 + Math.sin(t * 3 + i) * 0.45;
 
@@ -139,12 +156,12 @@ export function NetworkGraph() {
           ?.material as THREE.MeshBasicMaterial;
 
       if (nodeMat) {
-        nodeMat.emissiveIntensity = nd.suspicious
-          ? 2.5 + pulse * 3
-          : 0.8 + pulse * 1.8;
+        nodeMat.emissiveIntensity =
+          nd.suspicious
+            ? 2.5 + pulse * 3
+            : 0.8 + pulse * 1.8;
       }
 
-      /* halo remains stable */
       if (glowMat) {
         glowMat.opacity = nd.suspicious
           ? 0.18
@@ -152,9 +169,9 @@ export function NetworkGraph() {
       }
     }
 
-    /* update lines */
     const arr =
-      lineGeo.attributes.position.array as Float32Array;
+      lineGeo.attributes.position
+        .array as Float32Array;
 
     for (let i = 0; i < conns.length; i++) {
       const [a, b] = conns[i];
@@ -168,46 +185,52 @@ export function NetworkGraph() {
       arr[i * 6 + 5] = cp[b * 3 + 2];
     }
 
-    lineGeo.attributes.position.needsUpdate = true;
+    lineGeo.attributes.position.needsUpdate =
+      true;
 
-    /* darker lines */
     if (lineMatRef.current) {
       lineMatRef.current.opacity = 0.16;
     }
 
+    /* ✅ Rotating Globe */
     if (globeRef.current) {
-      globeRef.current.rotation.y = t * 0.02;
-      globeRef.current.rotation.x =
-        0.15 + Math.sin(t * 0.035) * 0.025;
+      globeRef.current.rotation.y += 0.0015;
     }
   });
 
   return (
     <group>
-      {/* globe */}
-      <mesh ref={globeRef} rotation={[0.15, 0, 0.08]}>
-        <sphereGeometry args={[2.8, 28, 16]} />
+      {/* ✅ Globe Behind Graph */}
+      <mesh
+        ref={globeRef}
+        position={[0.5, 0, -2]}
+      >
+        <sphereGeometry
+          args={[2.3, 48, 48]}
+        />
         <meshBasicMaterial
-          color="#0e3355"
+          color="#2aa8ff"
           wireframe
           transparent
-          opacity={0.08}
+          opacity={0.05}
         />
       </mesh>
 
-      {/* lines */}
+      {/* Lines */}
       <lineSegments geometry={lineGeo}>
         <lineBasicMaterial
           ref={lineMatRef}
           color={COL_LINE}
           transparent
           opacity={0.16}
-          blending={THREE.AdditiveBlending}
+          blending={
+            THREE.AdditiveBlending
+          }
           depthWrite={false}
         />
       </lineSegments>
 
-      {/* nodes */}
+      {/* Nodes */}
       {nodes.map((nd, i) => {
         const col = nd.suspicious
           ? COL_SUSPICIOUS
@@ -227,7 +250,6 @@ export function NetworkGraph() {
 
         return (
           <group key={i}>
-            {/* blinking center */}
             <mesh
               ref={(el) =>
                 (nodeRefs.current[i] = el)
@@ -235,7 +257,11 @@ export function NetworkGraph() {
               position={nd.base}
             >
               <sphereGeometry
-                args={[coreSize, 14, 14]}
+                args={[
+                  coreSize,
+                  14,
+                  14,
+                ]}
               />
               <meshStandardMaterial
                 color={col}
@@ -245,7 +271,6 @@ export function NetworkGraph() {
               />
             </mesh>
 
-            {/* stable outer glow */}
             <mesh
               ref={(el) =>
                 (glowRefs.current[i] = el)
@@ -253,7 +278,11 @@ export function NetworkGraph() {
               position={nd.base}
             >
               <sphereGeometry
-                args={[glowSize, 10, 10]}
+                args={[
+                  glowSize,
+                  10,
+                  10,
+                ]}
               />
               <meshBasicMaterial
                 color={col}

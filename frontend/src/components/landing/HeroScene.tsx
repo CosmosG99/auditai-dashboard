@@ -6,28 +6,29 @@ import { NetworkGraph } from "./NetworkGraph";
 import { MagnifierScanner } from "./MagnifierScanner";
 
 /* ------------------------------------------------------------------ */
-/*  Background star‑field particles                                    */
+/* Background star-field particles                                    */
 /* ------------------------------------------------------------------ */
 function BackgroundParticles() {
   const count = 300;
+
   const positions = useMemo(() => {
     const p = new Float32Array(count * 3);
+
     for (let i = 0; i < count; i++) {
       p[i * 3] = (Math.random() - 0.5) * 28;
       p[i * 3 + 1] = (Math.random() - 0.5) * 20;
       p[i * 3 + 2] = (Math.random() - 0.5) * 14 - 4;
     }
+
     return p;
   }, []);
 
   return (
     <points>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positions, 3]}
-        />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
+
       <pointsMaterial
         size={0.022}
         color="#4488bb"
@@ -42,26 +43,25 @@ function BackgroundParticles() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Very subtle camera drift                                           */
+/* Very subtle camera drift                                           */
 /* ------------------------------------------------------------------ */
 function CameraMotion() {
   useFrame(({ camera, clock }) => {
     const t = clock.getElapsedTime();
+
     camera.position.x = Math.sin(t * 0.06) * 0.08;
     camera.position.y = Math.cos(t * 0.05) * 0.06;
+
     camera.lookAt(0, 0, 0);
   });
+
   return null;
 }
 
 /* ------------------------------------------------------------------ */
-/*  Floating risk labels                                               */
+/* Floating Labels                                                    */
 /* ------------------------------------------------------------------ */
-const LABELS: {
-  name: string;
-  risk: "High" | "Medium" | "Low";
-  pos: [number, number, number];
-}[] = [
+const LABELS = [
   { name: "Vendor A", risk: "Medium", pos: [0.8, 2.9, 0.2] },
   { name: "New Account 1254", risk: "High", pos: [-2.1, 2.1, 0.1] },
   { name: "New Beneficiary", risk: "High", pos: [3.7, 1.1, 0] },
@@ -83,6 +83,7 @@ function FloatingLabels() {
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
+
     if (groupRef.current) {
       groupRef.current.children.forEach((child, i) => {
         child.position.y += Math.sin(t * 0.35 + i * 1.2) * 0.0002;
@@ -96,7 +97,7 @@ function FloatingLabels() {
         <Html
           key={i}
           center
-          position={l.pos}
+          position={l.pos as [number, number, number]}
           style={{ pointerEvents: "none" }}
           zIndexRange={[0, 0]}
         >
@@ -107,10 +108,7 @@ function FloatingLabels() {
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: 8,
               padding: "5px 10px 6px",
-              fontFamily: "'Inter', system-ui, sans-serif",
               whiteSpace: "nowrap",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.5)",
-              animation: `labelFade ${3 + i * 0.4}s ease-in-out infinite alternate`,
               opacity: 0.94,
             }}
           >
@@ -119,11 +117,11 @@ function FloatingLabels() {
                 color: "#e0e0e0",
                 fontSize: 10.5,
                 fontWeight: 500,
-                lineHeight: "14px",
               }}
             >
               {l.name}
             </div>
+
             <div
               style={{
                 display: "flex",
@@ -138,10 +136,9 @@ function FloatingLabels() {
                   height: 6,
                   borderRadius: "50%",
                   background: riskDot[l.risk],
-                  display: "inline-block",
-                  boxShadow: `0 0 8px ${riskDot[l.risk]}`,
                 }}
               />
+
               <span
                 style={{
                   fontSize: 8.5,
@@ -160,39 +157,86 @@ function FloatingLabels() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Main scene                                                         */
+/* Scene Content with Mouse Parallax                                  */
 /* ------------------------------------------------------------------ */
+function SceneContent() {
+  const groupRef = useRef<THREE.Group>(null!);
+  const mouse = useRef({ x: 0, y: 0 });
 
+  useEffect(() => {
+    const move = (e: MouseEvent) => {
+      mouse.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouse.current.y = (e.clientY / window.innerHeight - 0.5) * 2;
+    };
+
+    window.addEventListener("mousemove", move);
+
+    return () => window.removeEventListener("mousemove", move);
+  }, []);
+
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y +=
+        (mouse.current.x * 0.08 - groupRef.current.rotation.y) * 0.03;
+
+      groupRef.current.rotation.x +=
+        (-mouse.current.y * 0.05 - groupRef.current.rotation.x) * 0.03;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      <NetworkGraph />
+      <FloatingLabels />
+      <MagnifierScanner />
+    </group>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Main Hero Scene                                                    */
+/* ------------------------------------------------------------------ */
 export function HeroScene() {
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return <div className="w-full h-full" />;
-  }
+  if (!mounted) return <div className="w-full h-full" />;
 
   return (
     <Canvas
       camera={{ position: [0, 0, 8], fov: 50 }}
-      gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
+      gl={{
+        antialias: true,
+        alpha: true,
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.1,
+      }}
       dpr={[1, 2]}
       style={{ background: "transparent" }}
     >
-      {/* ---- Lighting for premium metallic reflections ---- */}
       <ambientLight intensity={0.18} />
 
-      {/* key light — top right */}
-      <directionalLight position={[6, 5, 6]} intensity={0.8} color="#ffffff" />
+      <directionalLight
+        position={[6, 5, 6]}
+        intensity={0.8}
+        color="#ffffff"
+      />
 
-      {/* fill light — left with blue tint */}
-      <directionalLight position={[-5, 3, 4]} intensity={0.3} color="#4488ff" />
+      <directionalLight
+        position={[-5, 3, 4]}
+        intensity={0.3}
+        color="#4488ff"
+      />
 
-      {/* backlight for rim separation */}
-      <directionalLight position={[0, -3, -4]} intensity={0.15} color="#6688cc" />
+      <directionalLight
+        position={[0, -3, -4]}
+        intensity={0.15}
+        color="#6688cc"
+      />
 
-      {/* accent — orange point light near magnifier for rim glow */}
       <pointLight
         position={[0.3, 0.2, 3]}
         intensity={2.0}
@@ -201,7 +245,6 @@ export function HeroScene() {
         decay={2}
       />
 
-      {/* secondary accent — subtle blue fill */}
       <pointLight
         position={[-2, -1, 2]}
         intensity={0.4}
@@ -212,11 +255,7 @@ export function HeroScene() {
 
       <CameraMotion />
       <BackgroundParticles />
-
-      {/* render order: graph behind, labels around, magnifier in front */}
-      <NetworkGraph />
-      <FloatingLabels />
-      <MagnifierScanner />
+      <SceneContent />
     </Canvas>
   );
 }

@@ -29,6 +29,8 @@ const cardContentBlock = (bright: boolean) => {
         fontFamily: "'Inter', system-ui, sans-serif",
         userSelect: "none",
         textAlign: "center",
+        width: "fit-content",
+        margin: "0 auto",
         filter: bright ? "contrast(1.1) brightness(1.08)" : "none",
       }}
     >
@@ -85,6 +87,7 @@ const cardContentBlock = (bright: boolean) => {
       >
         Amount
       </p>
+
       <p
         style={{
           margin: `1px 0 ${bright ? 8 : 6}px`,
@@ -108,6 +111,7 @@ const cardContentBlock = (bright: boolean) => {
       >
         Time
       </p>
+
       <p
         style={{
           margin: `1px 0 ${bright ? 10 : 6}px`,
@@ -186,16 +190,17 @@ export function MagnifierScanner() {
   const groupRef = useRef<THREE.Group>(null!);
   const rimRef = useRef<THREE.Mesh>(null!);
   const glowRef = useRef<THREE.Mesh>(null!);
+  const pulseRef = useRef<THREE.Mesh>(null!);
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
 
     if (groupRef.current) {
       /* slow circular orbit over the card */
-      groupRef.current.position.x = 0.25 + Math.cos(t * 0.55) * 0.22;
-      groupRef.current.position.y = 0.12 + Math.sin(t * 0.55) * 0.16;
+      groupRef.current.position.x = 0.25 + Math.cos(t * 0.8) * 0.22;
+      groupRef.current.position.y = 0.12 + Math.sin(t * 0.8) * 0.16;
       groupRef.current.position.z = 2.0 + Math.sin(t * 0.08) * 0.05;
-      groupRef.current.rotation.z = -0.28 + Math.sin(t * 0.45) * 0.03;
+      groupRef.current.rotation.z = -0.28 + Math.sin(t * 0.65) * 0.03;
     }
 
     if (rimRef.current) {
@@ -205,6 +210,14 @@ export function MagnifierScanner() {
     if (glowRef.current) {
       (glowRef.current.material as THREE.MeshBasicMaterial).opacity =
         0.2 + Math.sin(t * 1.2) * 0.07;
+    }
+    if (pulseRef.current) {
+      pulseRef.current.scale.setScalar(
+        1 + Math.sin(t * 1.2) * 0.08
+      );
+
+      (pulseRef.current.material as THREE.MeshBasicMaterial).opacity =
+        0.18 + Math.sin(t * 1.2) * 0.08;
     }
   });
 
@@ -226,7 +239,7 @@ export function MagnifierScanner() {
       </mesh>
 
       {/* ---- LAYER 2: Outer chrome border ---- */}
-      <mesh rotation={[0, 0, 0]}>
+      <mesh ref={pulseRef} rotation={[0, 0, 0]}>
         <torusGeometry args={[RIM_R + 0.04, 0.085, 32, 96]} />
         <meshStandardMaterial
           color="#888888"
@@ -258,6 +271,18 @@ export function MagnifierScanner() {
           emissiveIntensity={0.06}
           metalness={0.9}
           roughness={0.18}
+        />
+      </mesh>
+
+      {/* ---- LIVE SCANNING PULSE RING ---- */}
+      <mesh rotation={[0, 0, 0]}>
+        <torusGeometry args={[RIM_R + 0.22, 0.015, 8, 96]} />
+        <meshBasicMaterial
+          color="#ff6600"
+          transparent
+          opacity={0.25 + Math.sin(Date.now() * 0.002) * 0.12}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
         />
       </mesh>
 
@@ -347,16 +372,16 @@ export function MagnifierScanner() {
           {/* magnified card content */}
           <div
             style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -54%) scale(0.92)",
-              width: lensPx * 0.72,
+              width: "72%",
+              height: "72%",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
               textAlign: "center",
-              transformOrigin: "center center",
             }}
           >
             {cardContentBlock(true)}
