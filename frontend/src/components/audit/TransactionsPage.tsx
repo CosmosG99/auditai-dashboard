@@ -69,96 +69,113 @@ export function TransactionsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {detectionEvents.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-secondary/30 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-foreground group-hover:text-primary transition-colors">{tx.vendor}</div>
-                      <div className="text-xs text-muted-foreground font-mono mt-1">{tx.id}</div>
-                    </td>
-                    <td className="px-6 py-4 hidden md:table-cell text-muted-foreground">
-                      {tx.date}
-                    </td>
-                    <td className="px-6 py-4 hidden sm:table-cell">
-                      <span className={cn(
-                        "inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold border uppercase tracking-wider",
-                        tx.risk === 'HIGH' ? "bg-red-500/10 text-red-500 border-red-500/20" : 
-                        tx.risk === 'MEDIUM' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
-                        "bg-green-500/10 text-green-500 border-green-500/20"
-                      )}>
-                         {tx.risk} • {tx.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
-                        tx.verdict === 'LIKELY_SAFE' ? "bg-green-500/10 text-green-500 border-green-500/20" : 
-                        tx.verdict === 'LIKELY_FRAUD' ? "bg-red-500/10 text-red-500 border-red-500/20 animate-pulse" : 
-                        tx.verdict === 'FALSE_POSITIVE' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
-                        "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                      )}>
-                        {tx.verdict.replace(/_/g, " ")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className={cn(
-                        "font-semibold font-mono flex items-center justify-end gap-1",
-                        tx.verdict === 'LIKELY_SAFE' ? "text-green-500" : "text-foreground"
-                      )}>
-                        {tx.verdict === 'LIKELY_SAFE' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4 text-muted-foreground" />}
-                        ₹{Number(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={async () => {
-                             try {
-                               await updateAuditVerdict(tx.eventId, "LIKELY_SAFE");
-                               toast.success(`Marked ${tx.vendor} as SAFE`);
-                               refresh?.();
-                             } catch (e) {
-                               toast.error("Failed to update verdict");
-                             }
-                          }}
-                          title="Mark as Safe"
-                          className="p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-500 transition-all border border-transparent hover:border-green-500/30"
-                        >
-                          <CheckCircle2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={async () => {
-                            try {
-                              await updateAuditVerdict(tx.eventId, "FALSE_POSITIVE");
-                              toast.warning(`Marked ${tx.vendor} as FALSE POSITIVE`);
-                              refresh?.();
-                            } catch (e) {
-                              toast.error("Failed to update verdict");
-                            }
-                          }}
-                          title="Mark as False Positive"
-                          className="p-2 rounded-lg hover:bg-amber-500/20 text-muted-foreground hover:text-amber-500 transition-all border border-transparent hover:border-amber-500/30"
-                        >
-                          <AlertTriangle className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={async () => {
-                            try {
-                              await updateAuditVerdict(tx.eventId, "LIKELY_FRAUD");
-                              toast.error(`Marked ${tx.vendor} as FRAUD`);
-                              refresh?.();
-                            } catch (e) {
-                              toast.error("Failed to update verdict");
-                            }
-                          }}
-                          title="Confirm Fraud"
-                          className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-all border border-transparent hover:border-red-500/30"
-                        >
-                          <ShieldAlert className="h-4 w-4" />
-                        </button>
+                {detectionEvents.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-20 text-center text-muted-foreground bg-secondary/5">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="p-4 rounded-full bg-secondary/50">
+                          <Search className="h-10 w-10 opacity-20" />
+                        </div>
+                        <div>
+                          <p className="text-lg font-semibold text-foreground/70">No transactions found</p>
+                          <p className="text-sm mt-1 max-w-[280px] mx-auto">Upload a document in the Reports tab to start auditing your organization's financials.</p>
+                        </div>
                       </div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  detectionEvents.map((tx) => (
+                    <tr key={tx.id} className="hover:bg-secondary/30 transition-colors group">
+                      {/* ... existing row content ... */}
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-foreground group-hover:text-primary transition-colors">{tx.vendor}</div>
+                        <div className="text-xs text-muted-foreground font-mono mt-1">{tx.id}</div>
+                      </td>
+                      <td className="px-6 py-4 hidden md:table-cell text-muted-foreground">
+                        {tx.date}
+                      </td>
+                      <td className="px-6 py-4 hidden sm:table-cell">
+                        <span className={cn(
+                          "inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold border uppercase tracking-wider",
+                          tx.risk === 'HIGH' ? "bg-red-500/10 text-red-500 border-red-500/20" : 
+                          tx.risk === 'MEDIUM' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
+                          "bg-green-500/10 text-green-500 border-green-500/20"
+                        )}>
+                           {tx.risk} • {tx.category}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={cn(
+                          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+                          tx.verdict === 'LIKELY_SAFE' ? "bg-green-500/10 text-green-500 border-green-500/20" : 
+                          tx.verdict === 'LIKELY_FRAUD' ? "bg-red-500/10 text-red-500 border-red-500/20 animate-pulse" : 
+                          tx.verdict === 'FALSE_POSITIVE' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
+                          "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                        )}>
+                          {tx.verdict.replace(/_/g, " ")}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className={cn(
+                          "font-semibold font-mono flex items-center justify-end gap-1",
+                          tx.verdict === 'LIKELY_SAFE' ? "text-green-500" : "text-foreground"
+                        )}>
+                          {tx.verdict === 'LIKELY_SAFE' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4 text-muted-foreground" />}
+                          ₹{Number(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={async () => {
+                               try {
+                                 await updateAuditVerdict(tx.eventId, "LIKELY_SAFE");
+                                 toast.success(`Marked ${tx.vendor} as SAFE`);
+                                 refresh?.();
+                               } catch (e) {
+                                 toast.error("Failed to update verdict");
+                               }
+                            }}
+                            title="Mark as Safe"
+                            className="p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-500 transition-all border border-transparent hover:border-green-500/30"
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await updateAuditVerdict(tx.eventId, "FALSE_POSITIVE");
+                                toast.warning(`Marked ${tx.vendor} as FALSE POSITIVE`);
+                                refresh?.();
+                              } catch (e) {
+                                toast.error("Failed to update verdict");
+                              }
+                            }}
+                            title="Mark as False Positive"
+                            className="p-2 rounded-lg hover:bg-amber-500/20 text-muted-foreground hover:text-amber-500 transition-all border border-transparent hover:border-amber-500/30"
+                          >
+                            <AlertTriangle className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await updateAuditVerdict(tx.eventId, "LIKELY_FRAUD");
+                                toast.error(`Marked ${tx.vendor} as FRAUD`);
+                                refresh?.();
+                              } catch (e) {
+                                toast.error("Failed to update verdict");
+                              }
+                            }}
+                            title="Confirm Fraud"
+                            className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-all border border-transparent hover:border-red-500/30"
+                          >
+                            <ShieldAlert className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

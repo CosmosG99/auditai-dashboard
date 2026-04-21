@@ -8,8 +8,11 @@ import {
   Sparkles,
   Settings,
   ShieldCheck,
+  LogOut,
+  User as UserIcon,
 } from "lucide-react";
 import { useThemeLang } from "./ThemeLangContext";
+import { useAuth } from "../../hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 type ItemKey = "dashboard" | "transactions" | "anomalies" | "reports" | "insights" | "settings";
@@ -25,6 +28,7 @@ const items: Item[] = [
 
 export function Sidebar() {
   const { t } = useThemeLang();
+  const { user, logout } = useAuth();
   const matchRoute = useMatchRoute();
 
   return (
@@ -63,6 +67,28 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="p-3 border-t border-sidebar-border">
+        <div className="rounded-xl p-3 bg-secondary/30 border border-border/50">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+              <UserIcon className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-bold text-foreground truncate">{user?.name}</div>
+              <div className="text-[10px] text-muted-foreground truncate">{user?.email}</div>
+            </div>
+          </div>
+          <button
+            onClick={() => logout()}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] font-bold text-red-400 hover:bg-red-500/10 hover:text-red-500 transition-colors"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            SIGN OUT
+          </button>
+        </div>
+      </div>
+
       <div className="m-3 p-4 rounded-xl glass-card">
         <div className="text-xs text-muted-foreground mb-1">Compliance</div>
         <div className="text-2xl font-semibold">98.2%</div>
