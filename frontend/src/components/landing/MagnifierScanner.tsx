@@ -192,10 +192,10 @@ export function MagnifierScanner() {
 
     if (groupRef.current) {
       /* slow circular orbit over the card */
-      groupRef.current.position.x = 0.25 + Math.cos(t * 0.38) * 0.22;
-      groupRef.current.position.y = 0.12 + Math.sin(t * 0.38) * 0.15;
+      groupRef.current.position.x = 0.25 + Math.cos(t * 0.55) * 0.22;
+      groupRef.current.position.y = 0.12 + Math.sin(t * 0.55) * 0.16;
       groupRef.current.position.z = 2.0 + Math.sin(t * 0.08) * 0.05;
-      groupRef.current.rotation.z = -0.35 + Math.sin(t * 0.35) * 0.025;
+      groupRef.current.rotation.z = -0.28 + Math.sin(t * 0.45) * 0.03;
     }
 
     if (rimRef.current) {
@@ -350,12 +350,13 @@ export function MagnifierScanner() {
               position: "absolute",
               top: "50%",
               left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: lensPx * 0.78,
+              transform: "translate(-50%, -54%) scale(0.92)",
+              width: lensPx * 0.72,
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               textAlign: "center",
+              transformOrigin: "center center",
             }}
           >
             {cardContentBlock(true)}

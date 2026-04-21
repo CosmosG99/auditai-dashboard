@@ -72,6 +72,7 @@ function Navbar() {
             <path d="M9 12l2 2 4-4" />
           </svg>
         </div>
+
         <div className="leading-tight">
           <span className="text-white font-bold text-lg tracking-tight">
             Audit<span className="text-orange-400">AI</span>
@@ -99,6 +100,7 @@ function Navbar() {
         <button className="hidden sm:inline-flex text-[13px] text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 rounded-lg px-4 py-2 transition-all duration-200 font-medium">
           Login
         </button>
+
         <Link
           to="/dashboard"
           className="inline-flex items-center gap-2 text-[13px] font-semibold text-white bg-orange-500 hover:bg-orange-400 rounded-lg px-4 py-2 transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30"
@@ -123,7 +125,7 @@ function Navbar() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Landing page                                                       */
+/*  Landing Page                                                       */
 /* ------------------------------------------------------------------ */
 export function LandingPage() {
   return (
@@ -134,22 +136,14 @@ export function LandingPage() {
           "radial-gradient(ellipse 120% 100% at 20% 50%, #0a1225 0%, #050a15 50%, #030610 100%)",
       }}
     >
-      {/* global keyframes injected once */}
-      <style>{`
-        @keyframes labelFade {
-          0%   { opacity: 0.65; }
-          100% { opacity: 1; }
-        }
-      `}</style>
-
       <Navbar />
 
-      {/* ---- Three.js 3D scene (right side, full-bleed) ---- */}
+      {/* Three.js Scene */}
       <div className="absolute top-0 right-0 bottom-0 w-full lg:w-[62%] z-0">
         <HeroScene />
       </div>
 
-      {/* subtle gradient overlay to blend scene into text area */}
+      {/* Gradient Overlay */}
       <div
         className="hidden lg:block absolute top-0 bottom-0 z-[1] pointer-events-none"
         style={{
@@ -160,7 +154,7 @@ export function LandingPage() {
         }}
       />
 
-      {/* ---- Hero text area (left side) ---- */}
+      {/* Hero Text */}
       <motion.div
         variants={stagger}
         initial="hidden"
@@ -168,15 +162,6 @@ export function LandingPage() {
         className="relative z-10 flex items-center h-full px-6 lg:px-16 pt-20 pb-10 lg:pt-0 lg:pb-0"
       >
         <div className="max-w-xl w-full lg:w-[42%]">
-          {/* Tag */}
-          <motion.div variants={fadeLeft}>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/25 bg-orange-500/8 px-4 py-1.5 mb-6">
-              <span className="text-orange-400 text-[11px] font-semibold tracking-[0.12em] uppercase">
-                ◆ AI-Powered&ensp;◆ Real-Time&ensp;◆ Intelligent
-              </span>
-            </span>
-          </motion.div>
-
           {/* Heading */}
           <motion.h1
             variants={fadeLeft}
@@ -213,7 +198,6 @@ export function LandingPage() {
           <motion.div variants={fadeUp}>
             <Link
               to="/dashboard"
-              id="hero-cta"
               className="group inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white px-8 py-4 rounded-xl font-bold text-base transition-all duration-300 shadow-xl shadow-orange-600/25 hover:shadow-orange-500/40 hover:scale-[1.03] active:scale-[0.98]"
             >
               <svg
@@ -230,7 +214,9 @@ export function LandingPage() {
                 <circle cx="11" cy="11" r="8" />
                 <path d="M21 21l-4.35-4.35" />
               </svg>
+
               Start Detection
+
               <svg
                 width="18"
                 height="18"
@@ -249,7 +235,7 @@ export function LandingPage() {
         </div>
       </motion.div>
 
-      {/* bottom gradient fade for polish */}
+      {/* Bottom Fade */}
       <div
         className="absolute bottom-0 left-0 right-0 h-24 z-[2] pointer-events-none"
         style={{
