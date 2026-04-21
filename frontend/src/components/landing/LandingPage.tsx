@@ -18,7 +18,7 @@ const fadeLeft = {
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.65, ease: "easeOut" },
+    transition: { duration: 0.65, ease: [0.165, 0.84, 0.44, 1] }, // Use cubic-bezier for easeOutExpo
   },
 };
 
@@ -27,7 +27,7 @@ const fadeUp = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: "easeOut" },
+    transition: { duration: 0.6, ease: [0.165, 0.84, 0.44, 1] },
   },
 };
 
@@ -97,15 +97,18 @@ function Navbar() {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        <button className="hidden sm:inline-flex text-[13px] text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 rounded-lg px-4 py-2 transition-all duration-200 font-medium">
+        <Link 
+          to="/login"
+          className="hidden sm:inline-flex text-[13px] text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 rounded-lg px-4 py-2 transition-all duration-200 font-medium"
+        >
           Login
-        </button>
+        </Link>
 
         <Link
-          to="/dashboard"
+          to="/register"
           className="inline-flex items-center gap-2 text-[13px] font-semibold text-white bg-orange-500 hover:bg-orange-400 rounded-lg px-4 py-2 transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30"
         >
-          Start Detection
+          Sign Up
           <svg
             width="14"
             height="14"

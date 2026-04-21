@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as DetectionResultRouteImport } from './routes/detection-result'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -31,6 +33,16 @@ const SettingsRoute = SettingsRouteImport.update({
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsightsRoute = InsightsRouteImport.update({
@@ -65,6 +77,8 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/detection-result': typeof DetectionResultRoute
   '/insights': typeof InsightsRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
@@ -75,6 +89,8 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/detection-result': typeof DetectionResultRoute
   '/insights': typeof InsightsRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
@@ -86,6 +102,8 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/detection-result': typeof DetectionResultRoute
   '/insights': typeof InsightsRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
@@ -98,6 +116,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/detection-result'
     | '/insights'
+    | '/login'
+    | '/register'
     | '/reports'
     | '/settings'
     | '/transactions'
@@ -108,6 +128,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/detection-result'
     | '/insights'
+    | '/login'
+    | '/register'
     | '/reports'
     | '/settings'
     | '/transactions'
@@ -118,6 +140,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/detection-result'
     | '/insights'
+    | '/login'
+    | '/register'
     | '/reports'
     | '/settings'
     | '/transactions'
@@ -129,6 +153,8 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   DetectionResultRoute: typeof DetectionResultRoute
   InsightsRoute: typeof InsightsRoute
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   TransactionsRoute: typeof TransactionsRoute
@@ -155,6 +181,20 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insights': {
@@ -201,6 +241,8 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   DetectionResultRoute: DetectionResultRoute,
   InsightsRoute: InsightsRoute,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   TransactionsRoute: TransactionsRoute,
