@@ -83,7 +83,7 @@ export type AuditEvent = {
   };
 };
 
-const API_BASE = import.meta.env.VITE_AUDIT_BACKEND_URL || "http://localhost:4000";
+const API_BASE = import.meta.env.VITE_AUDIT_BACKEND_URL || "http://localhost:5000";
 
 export async function getAuditStats(): Promise<AuditStats> {
   const response = await fetch(`${API_BASE}/api/stats`);

@@ -25,8 +25,9 @@ export function TransactionsPage() {
         category: tx.category || "General",
         amount: Number(tx.amount || 0),
         isAnomaly: !!det.is_anomaly,
-        verdict: det.verdict || "NEEDS_REVIEW",
+        verdict: (det.anomaly_score < 25) ? "NO_RISK" : (det.anomaly_score < 50) ? "ANOMALY_NOT_DETECTED" : (det.verdict || "NEEDS_REVIEW"),
         risk: det.risk_level || "LOW",
+        finalDecision: ae.feedback?.status || "pending",
       };
     });
 
@@ -64,6 +65,7 @@ export function TransactionsPage() {
                   <th className="px-6 py-4 hidden md:table-cell">Date</th>
                   <th className="px-6 py-4 hidden sm:table-cell">Risk/Category</th>
                   <th className="px-6 py-4">Verdict Status</th>
+                  <th className="px-6 py-4">Final Decision</th>
                   <th className="px-6 py-4 text-right">Amount</th>
                   <th className="px-6 py-4 text-center">Review Actions</th>
                 </tr>
@@ -107,7 +109,7 @@ export function TransactionsPage() {
                       <td className="px-6 py-4">
                         <span className={cn(
                           "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
-                          tx.verdict === 'LIKELY_SAFE' ? "bg-green-500/10 text-green-500 border-green-500/20" : 
+                          (tx.verdict === 'LIKELY_SAFE' || tx.verdict === 'NO_RISK' || tx.verdict === 'ANOMALY_NOT_DETECTED') ? "bg-green-500/10 text-green-500 border-green-500/20" : 
                           tx.verdict === 'LIKELY_FRAUD' ? "bg-red-500/10 text-red-500 border-red-500/20 animate-pulse" : 
                           tx.verdict === 'FALSE_POSITIVE' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
                           "bg-blue-500/10 text-blue-500 border-blue-500/20"
@@ -115,12 +117,23 @@ export function TransactionsPage() {
                           {tx.verdict.replace(/_/g, " ")}
                         </span>
                       </td>
+                      <td className="px-6 py-4">
+                        <span className={cn(
+                          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+                          tx.finalDecision === 'LIKELY_SAFE' ? "bg-green-500/10 text-green-500 border-green-500/20" : 
+                          (tx.finalDecision === 'FALSE_POSITIVE' || tx.finalDecision === 'false_positive') ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : 
+                          (tx.finalDecision === 'LIKELY_FRAUD' || tx.finalDecision === 'true_scam') ? "bg-red-500/10 text-red-500 border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.2)]" : 
+                          "bg-slate-500/10 text-slate-500 border-slate-500/20"
+                        )}>
+                          {tx.finalDecision.replace(/_/g, " ")}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <div className={cn(
                           "font-semibold font-mono flex items-center justify-end gap-1",
-                          tx.verdict === 'LIKELY_SAFE' ? "text-green-500" : "text-foreground"
+                          (tx.verdict === 'LIKELY_SAFE' || tx.verdict === 'NO_RISK' || tx.verdict === 'ANOMALY_NOT_DETECTED') ? "text-green-500" : "text-foreground"
                         )}>
-                          {tx.verdict === 'LIKELY_SAFE' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4 text-muted-foreground" />}
+                          {(tx.verdict === 'LIKELY_SAFE' || tx.verdict === 'NO_RISK' || tx.verdict === 'ANOMALY_NOT_DETECTED') ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4 text-muted-foreground" />}
                           ₹{Number(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </div>
                       </td>

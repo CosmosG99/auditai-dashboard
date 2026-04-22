@@ -206,6 +206,21 @@ class _TransactionAnalyzerScreenState extends State<TransactionAnalyzerScreen> {
     ).animate().fadeIn();
   }
 
+  Future<void> _submitFeedback(String feedback) async {
+    if (_analysisResult?.id == null) return;
+    try {
+      await AuditService.submitFeedback(_analysisResult!.id!, feedback);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Verification updated: ${feedback.replaceAll('_', ' ').toUpperCase()}'),
+          backgroundColor: feedback == 'true_scam' ? AuditTheme.neonMagenta : AuditTheme.cyberTeal
+        )
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Feedback failed: $e')));
+    }
+  }
+
   Widget _buildAnalysisResult(bool isDark) {
     final result = _analysisResult!;
     final riskColor = _getRiskColor(result.riskLevel);
@@ -214,7 +229,7 @@ class _TransactionAnalyzerScreenState extends State<TransactionAnalyzerScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Original Document Preview (Returned from Backend)
+        // 1. Original Document Preview
         if (result.documentPreview != null) ...[
           Text('ORIGINAL DOCUMENT', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AuditTheme.textSlate, letterSpacing: 1.2)),
           const SizedBox(height: 12),
@@ -265,13 +280,48 @@ class _TransactionAnalyzerScreenState extends State<TransactionAnalyzerScreen> {
           children: [
             Expanded(child: _buildScoreSquare('RISK SCORE', '${result.anomalyScore}%', riskColor)),
             const SizedBox(width: 16),
-            Expanded(child: _buildScoreSquare('FALSE POSITIVE', '${100 - result.anomalyScore}%', Colors.blue)),
+            Expanded(child: _buildScoreSquare('FALSE POSITIVE', '${result.falsePositiveScore}%', Colors.blue)),
           ],
         ).animate().fadeIn(delay: 100.ms).moveY(begin: 20),
 
         const SizedBox(height: 24),
 
-        // 4. Forensic Assessment Card
+        // 4. USER FEEDBACK Section (NEW)
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: AuditTheme.glassDecoration(isDark: isDark, accentColor: Colors.white24),
+          child: Column(
+            children: [
+              const Text('VERIFY AI ACCURACY', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AuditTheme.textSlate, letterSpacing: 1.5)),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _submitFeedback('true_scam'),
+                      icon: const Icon(Icons.gavel_rounded, size: 16),
+                      label: const Text('TRUE SCAM', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                      style: OutlinedButton.styleFrom(foregroundColor: AuditTheme.neonMagenta, side: const BorderSide(color: AuditTheme.neonMagenta)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _submitFeedback('false_positive'),
+                      icon: const Icon(Icons.verified_user_rounded, size: 16),
+                      label: const Text('FALSE POSITIVE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                      style: OutlinedButton.styleFrom(foregroundColor: AuditTheme.cyberTeal, side: const BorderSide(color: AuditTheme.cyberTeal)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ).animate().fadeIn(delay: 150.ms).moveY(begin: 20),
+
+        const SizedBox(height: 24),
+
+        // 5. Forensic Assessment Card
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),

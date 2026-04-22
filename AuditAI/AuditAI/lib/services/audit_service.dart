@@ -6,26 +6,30 @@ class TransactionAnalysisResult {
   final String? id;
   final String? riskLevel;
   final int anomalyScore;
+  final int falsePositiveScore; // Explicit score
   final String? status;
   final String? reason;
   final List<String> suspiciousSignals;
   final Map<String, dynamic> extractedData;
   final String? documentPreview;
+  final String? userFeedback;
   final DateTime? createdAt;
 
   TransactionAnalysisResult({
     this.id,
     required this.riskLevel,
     required this.anomalyScore,
+    required this.falsePositiveScore,
     required this.status,
     required this.reason,
     required this.suspiciousSignals,
     required this.extractedData,
     this.documentPreview,
+    this.userFeedback,
     this.createdAt,
   });
 
-  factory TransactionAnalysisResult.fromJson(Map<String, dynamic> json, {String? preview}) {
+  factory TransactionAnalysisResult.fromJson(Map<String, dynamic> json, {String? preview, String? docId}) {
     final engine = json['fraud_logic_engine'] ?? {};
     final extracted = json['extracted_data'] ?? {};
     
@@ -34,13 +38,16 @@ class TransactionAnalysisResult {
     if (engine['status'] == 'potential_false_positive') rLevel = 'MEDIUM';
 
     return TransactionAnalysisResult(
+      id: docId,
       riskLevel: rLevel,
-      anomalyScore: (engine['false_positive_score'] ?? 0).toInt(),
+      anomalyScore: (engine['risk_score'] ?? 0).toInt(),
+      falsePositiveScore: (engine['false_positive_score'] ?? 0).toInt(),
       status: engine['status']?.toString(),
       reason: engine['reasoning_summary']?.toString(),
       suspiciousSignals: List<String>.from(engine['risk_flags'] ?? []),
       extractedData: Map<String, dynamic>.from(extracted),
       documentPreview: preview,
+      userFeedback: 'pending',
       createdAt: DateTime.now(),
     );
   }
@@ -54,6 +61,7 @@ class TransactionAnalysisResult {
       id: json['_id'],
       riskLevel: rLevel,
       anomalyScore: (json['riskScore'] ?? 0).toInt(),
+      falsePositiveScore: (json['falsePositiveScore'] ?? 0).toInt(),
       status: json['status'],
       reason: json['reasoning'],
       suspiciousSignals: List<String>.from(json['riskFlags'] ?? []),
@@ -63,6 +71,7 @@ class TransactionAnalysisResult {
         'category': json['category'],
       },
       documentPreview: json['documentPreview'],
+      userFeedback: json['userFeedback'],
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
     );
   }
@@ -70,6 +79,19 @@ class TransactionAnalysisResult {
 
 class AuditService {
   static const String _baseUrl = ApiKeys.backendUrl;
+
+  static Future<void> submitFeedback(String recordId, String feedback) async {
+    try {
+      final url = Uri.parse('$_baseUrl/api/audit-record/$recordId/feedback');
+      await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'feedback': feedback}),
+      );
+    } catch (e) {
+      throw Exception('Failed to submit feedback: $e');
+    }
+  }
 
   /// Autonomous analysis: Just send the file and let AI do everything
   static Future<TransactionAnalysisResult> analyzeDocument(String filePath) async {
@@ -86,7 +108,8 @@ class AuditService {
         final data = jsonDecode(response.body);
         final analysis = data['audit_event']?['analysis'] ?? {};
         final preview = data['audit_event']?['document_preview']?.toString();
-        return TransactionAnalysisResult.fromJson(analysis, preview: preview);
+        final docId = data['audit_event']?['id']?.toString();
+        return TransactionAnalysisResult.fromJson(analysis, preview: preview, docId: docId);
       } else {
         throw Exception('Analysis failed: ${response.statusCode}');
       }
