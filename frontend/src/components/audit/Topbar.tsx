@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useThemeLang } from "./ThemeLangContext";
 import type { Lang } from "@/lib/i18n";
+import { AuditAILogo } from "./AuditAILogo";
 
 const langLabels: Record<Lang, string> = { en: "English", hi: "हिन्दी", kok: "Konkani" };
 
@@ -19,8 +20,8 @@ export function Topbar() {
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-border bg-background/70 backdrop-blur-xl">
       <div className="h-full flex items-center gap-3 px-4 lg:px-6">
-        <div className="lg:hidden font-semibold">
-          Audit<span className="text-primary">AI</span>
+        <div className="lg:hidden">
+          <AuditAILogo compact />
         </div>
         <div className="flex-1 max-w-xl relative">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />

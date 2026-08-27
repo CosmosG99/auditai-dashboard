@@ -7,13 +7,13 @@ import {
   FileText,
   Sparkles,
   Settings,
-  ShieldCheck,
   LogOut,
   User as UserIcon,
 } from "lucide-react";
 import { useThemeLang } from "./ThemeLangContext";
 import { useAuth } from "../../hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { AuditAILogo } from "./AuditAILogo";
 
 type ItemKey = "dashboard" | "transactions" | "anomalies" | "reports" | "insights" | "settings";
 type Item = { key: ItemKey; icon: typeof LayoutDashboard };
@@ -34,12 +34,7 @@ export function Sidebar() {
   return (
     <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
       <div className="flex items-center gap-2 px-5 h-16 border-b border-sidebar-border">
-        <div className="grid place-items-center h-8 w-8 rounded-lg bg-primary text-primary-foreground">
-          <ShieldCheck className="h-4 w-4" />
-        </div>
-        <div className="font-semibold tracking-tight text-sidebar-foreground">
-          Audit<span className="text-primary">AI</span>
-        </div>
+        <AuditAILogo />
       </div>
       <nav className="flex-1 p-3 space-y-1">
         {items.map((it) => {
