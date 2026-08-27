@@ -2,6 +2,14 @@
 
 AuditAI is a financial audit dashboard for reviewing transactions, detecting anomalies, and generating audit reports with a local AI backend.
 
+**Dashboard**
+<img width="1903" height="912" alt="image" src="https://github.com/user-attachments/assets/f04afcd3-9faa-4d3e-b5c7-3d17ef229f67" />
+**Uploading a document**
+<img width="1600" height="769" alt="image" src="https://github.com/user-attachments/assets/8dfffeba-a577-41ca-9ab5-78d7347b3163" />
+**Result**
+<img width="1577" height="907" alt="image" src="https://github.com/user-attachments/assets/47257170-28aa-4402-8dd5-49f72c6bcb15" />
+
+
 ## Requirements
 
 - Node.js 18 or newer
